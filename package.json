@@ -1,0 +1,22 @@
+{
+  "name": "markview",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/spotandjake/MarkView.git",
+  "author": "Jake Follest <40705786+spotandjake@users.noreply.github.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "yarn build && yarn runCode",
+    "build": "tsc",
+    "runCode": "node --enable-source-maps --harmony-top-level-await ./dist/index.js",
+    "clean": "del-cli ./dist/**/*"
+  },
+  "dependencies": {
+    "figlet": "^1.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^16.10.2",
+    "del-cli": "^4.0.1",
+    "typescript": "^4.4.3"
+  }
+}
