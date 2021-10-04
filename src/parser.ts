@@ -109,10 +109,18 @@ const Lexems: MarkDownLexem[] = [
     regex: /<(?<content>(?<link>((www|http:|https:)+[^\s]+[\w])))>/im,
     renderInside: true
   },
-  // TODO: Table
+  {
+    type: NodeType.Table,
+    regex: /^(\|[^\n]+\|\r?\n)((?:\|:?[-]+:?)+\|)(\n(?:\|[^\n]+\|\r?\n?)*)?$/im,
+    renderInside: false
+  }
 ]
 // Parser
-const parse = (input: string, entry = true): MarkDownNode[] => {
+const parse = (input: string, entry = true, level = 0): MarkDownNode[] => {
+  if (level >= 20) return [{
+    type: NodeType.Text,
+    content: input
+  }];
   const parsed: MarkDownNode[] = [];
   if (entry) input = input.replace(/\r\n/g, '\n');
   while (input) {
@@ -126,7 +134,7 @@ const parse = (input: string, entry = true): MarkDownNode[] => {
           currentMatch = {
             type: Lexem.type,
             index: match.index,
-            content: match.groups?.content || '',
+            content: match.groups?.content || match[0],
             raw: match[0],
             match: match,
             renderInside: Lexem.renderInside
@@ -151,7 +159,7 @@ const parse = (input: string, entry = true): MarkDownNode[] => {
       // Push Special Node
       parsed.push({
         type: currentMatch.type,
-        content: currentMatch.renderInside ? parse(currentMatch.content, false) : currentMatch.content,
+        content: currentMatch.renderInside ? parse(currentMatch.content, false, level + 1) : currentMatch.content,
         metadata: metadata
       });
       input = input.slice(currentMatch.index + currentMatch.raw.length);
