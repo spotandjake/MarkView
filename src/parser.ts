@@ -49,10 +49,9 @@ const Lexems: MarkDownLexem[] = [
     regex: /^> (.*)$/im,
   },
   // TODO: OrderedList
-  // TODO: UnorderedList
   {
     type: NodeType.UnorderedList,
-    regex: /^[\s]*[*-] (.*)$/im,
+    regex: /^[\s]*[*-+] (.*)$/im,
   },
   {
     type: NodeType.BlockQuote,

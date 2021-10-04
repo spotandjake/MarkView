@@ -22,10 +22,15 @@ const render = (nodes: MarkDownNode[], entry = true): string => {
       case NodeType.BlockQuote:
         content += `\x1b[46m ${nodeContent}\x1b[0m`;
         break;
-      // TODO: Lists
+      // TODO: OrderedList
+      case NodeType.UnorderedList:
+        // TODO: add list hanging indentation
+        console.log(node);
+        content += `• ${nodeContent}\n`;
+        break;
       // TODO: Code
       case NodeType.HorizontalRule:
-        content += '─'.repeat(process.stdout.columns);
+        content += `${'─'.repeat(process.stdout.columns)}\n`;
         break;
       case NodeType.Link:
         content += `\x1b]8;;${node.metadata?.Link || ''}\x1b\\${nodeContent}\x1b]8;;\x1b\\`;
