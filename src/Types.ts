@@ -14,8 +14,10 @@ export const enum NodeType {
   OrderedList = "OrderedList",
   UnorderedList = "UnorderedList",
   Code = "Code",
+  SingleCode = "SingleCode",
   HorizontalRule = "HorizontalRule",
   Link = "Link",
+  Table = "Table",
   // Normal Text
   Text = "Text",
 }
@@ -28,4 +30,5 @@ export interface MarkDownNode {
 export interface MarkDownLexem {
   type: NodeType;
   regex: RegExp;
+  renderInside: boolean;
 }

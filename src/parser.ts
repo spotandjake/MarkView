@@ -4,88 +4,117 @@ const Lexems: MarkDownLexem[] = [
   // Headings
   {
     type: NodeType.H1,
-    regex: /^# (.*$)/im,
+    regex: /^# (?<content>.*$)/im,
+    renderInside: true
   },
   {
     type: NodeType.H2,
-    regex: /^## (.*$)/im,
+    regex: /^## (?<content>.*$)/im,
+    renderInside: true
   },
   {
     type: NodeType.H3,
-    regex: /^### (.*$)/im,
+    regex: /^### (?<content>.*$)/im,
+    renderInside: true
   },
   {
     type: NodeType.H4,
-    regex: /^#### (.*$)/im,
+    regex: /^#### (?<content>.*$)/im,
+    renderInside: true
   },
   {
     type: NodeType.H5,
-    regex: /^###### (.*$)/im,
+    regex: /^###### (?<content>.*$)/im,
+    renderInside: true
   },
   {
     type: NodeType.H6,
-    regex: /^####### (.*$)/im,
+    regex: /^####### (?<content>.*$)/im,
+    renderInside: true
   },
   // Text Formatting
   {
     type: NodeType.Bold,
-    regex: /\*\*(.*)\*\*/im,
+    regex: /\*\*(?<content>.*)\*\*/im,
+    renderInside: true
   },
   {
     type: NodeType.Bold,
-    regex: /__(.*)__/im,
+    regex: /__(?<content>.*)__/im,
+    renderInside: true
   },
   {
     type: NodeType.Italic,
-    regex: /\*(.*)\*/im,
+    regex: /\*(?<content>.*)\*/im,
+    renderInside: true
   },
   {
     type: NodeType.Italic,
-    regex: /_(.*)_/im,
+    regex: /_(?<content>.*)_/im,
+    renderInside: true
   },
   // Features
   {
     type: NodeType.BlockQuote,
-    regex: /^> (.*)$/im,
+    regex: /^> (?<content>.*)$/im,
+    renderInside: true
   },
-  // TODO: OrderedList
+  {
+    type: NodeType.OrderedList,
+    regex: /^(?<indentation> *)\d*[).] (?<content>.*)$/im,
+    renderInside: true
+  },
   {
     type: NodeType.UnorderedList,
-    regex: /^[\s]*[*-+] (.*)$/im,
+    regex: /^(?<indentation> *)[*\-+] (?<content>.*)$/im,
+    renderInside: true
   },
   {
-    type: NodeType.BlockQuote,
-    regex: /^> (.*)$/im,
+    type: NodeType.Code,
+    regex: /```(?<language>.*)\n(?<content>[\s\S]*?)```/im,
+    renderInside: false
   },
-  // TODO: Code
+  {
+    type: NodeType.SingleCode,
+    regex: /`(?<content>[^`\n]*)`/im,
+    renderInside: false
+  },
   {
     type: NodeType.HorizontalRule,
     regex: /^\*\*\*\**$/im,
+    renderInside: false
   },
   {
     type: NodeType.HorizontalRule,
-    regex: /^----$/im,
+    regex: /^----*$/im,
+    renderInside: false
   },
   {
     type: NodeType.HorizontalRule,
-    regex: /^____$/im,
+    regex: /^____*$/im,
+    renderInside: false
   },
   {
     type: NodeType.Link,
-    regex: /\[(?<text>[^\[\]]*)\]\((?<link>[^\(\)]*)\)/im,
+    regex: /\[(?<content>[^\[\]]*)\]\((?<link>[^\(\)]*)\)/im,
+    renderInside: true
   },
-  {
+  { // Email
     type: NodeType.Link,
-    regex: /\[([^\[\]]*)\]\((?<link>[^\(\)]*)\)/im,
+    regex: /<(?<content>(?<link>(.+@[^@]+\.[^@]{2,})))>/im,
+    renderInside: true
   },
-  {
+  { // URL
     type: NodeType.Link,
-    regex: /<((?<link>(.*)))>/im,
-  }
+    regex: /<(?<content>(?<link>((www|http:|https:)+[^\s]+[\w])))>/im,
+    renderInside: true
+  },
+  // TODO: Table
 ]
 // Parser
-const parse = (input: string): MarkDownNode[] => {
+const parse = (input: string, entry = true): MarkDownNode[] => {
   const parsed: MarkDownNode[] = [];
+  if (entry) input = input.replace(/\r\n/g, '\n');
   while (input) {
     let currentMatch;
     // Loop over all our regex's, find the earliest match
@@ -97,9 +126,10 @@ const parse = (input: string): MarkDownNode[] => {
           currentMatch = {
             type: Lexem.type,
             index: match.index,
-            content: match[1],
+            content: match.groups?.content || '',
             raw: match[0],
-            match: match
+            match: match,
+            renderInside: Lexem.renderInside
           };
         }
       }
@@ -114,10 +144,14 @@ const parse = (input: string): MarkDownNode[] => {
       }
       let metadata: { [key: string]: any } = {};
       if (currentMatch.type == NodeType.Link) metadata.Link = currentMatch.match.groups?.link || '';
+      if (
+        currentMatch.type == NodeType.UnorderedList ||
+        currentMatch.type == NodeType.OrderedList
+      ) metadata.Indentation = currentMatch.match.groups?.indentation || '';
       // Push Special Node
       parsed.push({
         type: currentMatch.type,
-        content: parse(currentMatch.content),
+        content: currentMatch.renderInside ? parse(currentMatch.content, false) : currentMatch.content,
         metadata: metadata
       });
       input = input.slice(currentMatch.index + currentMatch.raw.length);

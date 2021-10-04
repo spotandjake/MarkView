@@ -13,6 +13,6 @@ import render from './render';
   // TODO: Parse
   const parsedData = parser(fileData);
   // TODO: Render
-  // console.log(parsedData);
+  console.dir(parsedData, { depth: null });
   console.log(render(parsedData));
 })()
