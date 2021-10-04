@@ -47,6 +47,41 @@ const Lexems: MarkDownLexem[] = [
   {
     type: NodeType.BlockQuote,
     regex: /^> (.*)$/im,
+  },
+  // TODO: OrderedList
+  // TODO: UnorderedList
+  {
+    type: NodeType.UnorderedList,
+    regex: /^[\s]*[*-] (.*)$/im,
+  },
+  {
+    type: NodeType.BlockQuote,
+    regex: /^> (.*)$/im,
+  },
+  // TODO: Code
+  {
+    type: NodeType.HorizontalRule,
+    regex: /^\*\*\*\**$/im,
+  },
+  {
+    type: NodeType.HorizontalRule,
+    regex: /^----$/im,
+  },
+  {
+    type: NodeType.HorizontalRule,
+    regex: /^____$/im,
+  },
+  {
+    type: NodeType.Link,
+    regex: /\[(?<text>[^\[\]]*)\]\((?<link>[^\(\)]*)\)/im,
+  },
+  {
+    type: NodeType.Link,
+    regex: /\[([^\[\]]*)\]\((?<link>[^\(\)]*)\)/im,
+  },
+  {
+    type: NodeType.Link,
+    regex: /<((?<link>(.*)))>/im,
   }
 ]
 // Parser
@@ -64,7 +99,8 @@ const parse = (input: string): MarkDownNode[] => {
             type: Lexem.type,
             index: match.index,
             content: match[1],
-            raw: match[0]
+            raw: match[0],
+            match: match
           };
         }
       }
@@ -77,10 +113,13 @@ const parse = (input: string): MarkDownNode[] => {
           content: input.slice(0, currentMatch.index)
         });
       }
+      let metadata: { [key: string]: any } = {};
+      if (currentMatch.type == NodeType.Link) metadata.Link = currentMatch.match.groups?.link || '';
       // Push Special Node
       parsed.push({
         type: currentMatch.type,
-        content: parse(currentMatch.content)
+        content: parse(currentMatch.content),
+        metadata: metadata
       });
       input = input.slice(currentMatch.index + currentMatch.raw.length);
     } else {

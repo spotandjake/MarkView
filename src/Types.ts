@@ -11,6 +11,11 @@ export const enum NodeType {
   Italic = "Italic",
   // Features
   BlockQuote = "BlockQuote",
+  OrderedList = "OrderedList",
+  UnorderedList = "UnorderedList",
+  Code = "Code",
+  HorizontalRule = "HorizontalRule",
+  Link = "Link",
   // Normal Text
   Text = "Text",
 }
@@ -18,6 +23,7 @@ export const enum NodeType {
 export interface MarkDownNode {
   type: NodeType;
   content: string | MarkDownNode[];
+  metadata?: { [key: string]: any };
 }
 export interface MarkDownLexem {
   type: NodeType;
